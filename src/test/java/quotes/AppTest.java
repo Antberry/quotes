@@ -41,4 +41,5 @@ public class AppTest {
                 App.printRandomObject(new Object[] {testQuote})
         );
     }
+
 }

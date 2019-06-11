@@ -6,18 +6,16 @@ package quotes;
 import java.io.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class App {
 
     public static void main(String[] args) throws Exception {
-
-        printRandomObject(
-                jsonToQuote(
-                        App.getQuoteData()
-                )
-        );
-
-        Quote newQuote = new Quote("Richard", "hello");
+        getQuoteData();
     }
 
     protected static String printRandomObject(Object[] objArray) {
@@ -38,7 +36,6 @@ public class App {
         return gson.fromJson(string, Quote[].class);
     }
 
-
     public static class Quote {
         public String author;
         public String text;
@@ -46,6 +43,7 @@ public class App {
         public Quote(String author, String text) {
             this.author = author;
             this.text = text;
+
         }
 
         public String toString() {
@@ -54,17 +52,33 @@ public class App {
 
     }
 
+    public class Formismatic {
+        protected String quoteText;
+
+    }
 
 
     protected static String getQuoteData() throws Exception {
-        File file = new File("./src/main/resources/recentquotes.json");
-        BufferedReader br = new BufferedReader(new FileReader(file));
+        try {
+            URL url = new URL("https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            BufferedReader reader = new BufferedReader(new InputStreamReader((con.getInputStream())));
+            Gson gson = new Gson();
+            Formismatic formismatic = gson.fromJson(reader, Formismatic.class);
+            System.out.println(formismatic.quoteText);
+            return formismatic.quoteText;
 
-        String st;
-        StringBuilder outputString = new StringBuilder();
-        while ((st = br.readLine()) != null) {
-            outputString.append(st);
+        } catch (Exception e) {
+            File file = new File("./src/main/resources/recentquotes.json");
+            BufferedReader br = new BufferedReader(new FileReader(file));
+
+            String st;
+            StringBuilder outputString = new StringBuilder();
+            while ((st = br.readLine()) != null) {
+                outputString.append(st);
+            }
+            return printRandomObject(jsonToQuote(outputString.toString()));
         }
-        return outputString.toString();
     }
+
 }
